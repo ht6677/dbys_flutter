@@ -5,7 +5,6 @@ import 'package:flustars/flustars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class RegPage extends StatefulWidget {
   @override
@@ -115,9 +114,11 @@ class _RegPagePageState extends State<RegPage> {
                               color: Theme.of(context).primaryColor,
                               child: Text("获取验证码"),
                               onPressed: () {
+                                print(RegexUtil.isEmail(_emailController.text));
                                 if (RegexUtil.isEmail(_emailController.text) &
-                                    (_unameController.text.length > 3) &
+                                    (_unameController.text.length >= 3) &
                                     !isv) {
+                                  print('ok');
                                   getYzm();
                                 }
                               },
@@ -131,7 +132,7 @@ class _RegPagePageState extends State<RegPage> {
                   keyboardType: TextInputType.number,
                   controller: _verificationController,
                   decoration: InputDecoration(
-                      labelText: '邮箱验证码',
+                      labelText: '邮箱验证码(如果没收到，请检查垃圾邮箱)',
                       hintText: '请输入邮箱验证码',
                       prefixIcon: Icon(Icons.verified_user)),
                   //校验密码（不能为空）

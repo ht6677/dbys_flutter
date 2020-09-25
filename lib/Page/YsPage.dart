@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cdnbye/cdnbye.dart';
 import 'package:chewie/chewie.dart';
+import 'package:dbys/Socket/YiQiKanSocket.dart';
 import 'package:dbys/module/CustomControls.dart';
 import 'package:dbys/module/Ysb.dart';
 import 'package:flustars/flustars.dart';
@@ -14,6 +15,7 @@ import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
 import 'Download/DownloadManagement.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class YsPage extends StatefulWidget {
   YsPage({this.id});
@@ -39,10 +41,12 @@ class _YsPageState extends State<YsPage> {
   YYDialog jiDialog;
   List downloadList = [];
   bool nextJi=false;
+  bool loadOk=false;
   //与原生交互的通道
   static const platform = const MethodChannel('cn.p00q.dbys/tp');
 
   getList() async {
+    print("获取列表");
     try {
       tvs = await platform.invokeMethod('getList');
     } on PlatformException catch (e) {
@@ -97,20 +101,28 @@ class _YsPageState extends State<YsPage> {
     }
     //定时器 定时发送观看时间
     postTimer = TimerUtil();
-    postTimer.setInterval(2000);
+    postTimer.setInterval(500);
     postTimer.setOnTimerTickCallback((int tick) {
       //有视频正在播放
       if (_videoPlayerController != null &&
           _videoPlayerController.value.isPlaying) {
         Duration d = _videoPlayerController.value.position;
         if (username != null) {
-          http.post("https://dbys.vip/api/v1/ys/time", body: {
+          YiQiKanSocket.send(jsonEncode({
+            "type":"postTime",
             "ysid": widget.id.toString(),
             "username": username,
             "ysjiname": pNAME,
             "time": d.inSeconds.toString(),
             "token": token
-          });
+          }));
+          /*http.post("https://dbys.vip/api/v1/ys/time", body: {
+            "ysid": widget.id.toString(),
+            "username": username,
+            "ysjiname": pNAME,
+            "time": d.inSeconds.toString(),
+            "token": token
+          });*/
         }
         if(SpUtil.getBool("AoutPlayerNext")&&(_videoPlayerController.value.position.inSeconds+7)>_videoPlayerController.value.duration.inSeconds){
           if(_chewieController.isFullScreen){
@@ -135,6 +147,7 @@ class _YsPageState extends State<YsPage> {
       }
     });
     postTimer.startTimer();
+    loadOk=true;
     setState(() {});
   }
 
@@ -255,23 +268,23 @@ class _YsPageState extends State<YsPage> {
                       child: Center(
                     child: Wrap(
                         children: playList
-                            .map((ys) => MaterialButton(
-                                  height: 40,
-                                  elevation: 5,
-                                  color: downloadList.contains(ys)
-                                      ? Colors.red
-                                      : Theme.of(context).accentColor,
-                                  textColor: Colors.white,
-                                  child: Text(ys['name']),
-                                  onPressed: () {
-                                    if (downloadList.contains(ys)) {
-                                      downloadList.remove(ys);
-                                    } else {
-                                      downloadList.add(ys);
-                                    }
-                                    setState(() {});
-                                  },
-                                ))
+                            .map((ys) =>  MaterialButton(
+                          height: 40,
+                          elevation: 5,
+                          color: downloadList.contains(ys)
+                              ? Colors.red
+                              : Theme.of(context).accentColor,
+                          textColor: Colors.white,
+                          child: Text(ys['name']),
+                          onPressed: () {
+                            if (downloadList.contains(ys)) {
+                              downloadList.remove(ys);
+                            } else {
+                              downloadList.add(ys);
+                            }
+                            setState(() {});
+                          },
+                        ),)
                             .toList()),
                   ));
                 })),
@@ -312,7 +325,7 @@ class _YsPageState extends State<YsPage> {
                   },
                 )),
             preferredSize: Size.fromHeight(40)),
-        body: Column(
+        body: loadOk?Column(
           children: <Widget>[
             Container(
               child: _videoPlayerController != null &&
@@ -357,8 +370,7 @@ class _YsPageState extends State<YsPage> {
                                         },
                                       ))
                                   .toList(),
-                            ))),
-                        MaterialButton(
+                            ))),Container(width: 70,child:MaterialButton(
                           elevation: 5,
                           color: Theme.of(context).accentColor,
                           textColor: Colors.white,
@@ -381,13 +393,26 @@ class _YsPageState extends State<YsPage> {
                                       toastLength: Toast.LENGTH_SHORT,
                                       gravity: ToastGravity.CENTER,
                                       backgroundColor:
-                                          Theme.of(context).accentColor,
+                                      Theme.of(context).accentColor,
                                       textColor: Colors.white,
                                       fontSize: 16.0);
                                 }
                               }
                             }
                           },
+                        ) ,)
+                        ,Container(
+                          width: 70,child: Padding(padding:EdgeInsets.fromLTRB(5, 0, 0, 0),child:MaterialButton(
+                          elevation: 5,
+                          color: Theme.of(context).accentColor,
+                          textColor: Colors.white,
+                          child: Text("刷新"),
+                          onPressed: () {
+                            tvs=[];
+                            getList();
+                            setState(() {});
+                          },
+                        )),
                         )
                       ],
                     ),
@@ -494,6 +519,20 @@ class _YsPageState extends State<YsPage> {
                                   overflow: TextOverflow.ellipsis,
                                   textAlign: TextAlign.left,
                                   maxLines: 2),
+                            ),Container(
+                              width: (MediaQuery.of(context).size.width - 100),
+                              child: RichText(
+                                  text: TextSpan(
+                                      text: "评分:",
+                                      style: labStyle,
+                                      children: [
+                                        TextSpan(
+                                            text: qNull(ysb.pf.toString()),
+                                            style: textStyle),
+                                      ]),
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.left,
+                                  maxLines: 2),
                             ),
                             Container(
                               width: (MediaQuery.of(context).size.width - 100),
@@ -510,31 +549,31 @@ class _YsPageState extends State<YsPage> {
                                   textAlign: TextAlign.left,
                                   maxLines: 2),
                             ),
-                            Container(
-                              width: (MediaQuery.of(context).size.width - 100),
-                              child: RichText(
-                                  text: TextSpan(
-                                      text: "更新时间:",
-                                      style: labStyle,
-                                      children: [
-                                        TextSpan(
-                                            text: qNull(ysb.gxtime),
-                                            style: textStyle),
-                                      ]),
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.left,
-                                  maxLines: 2),
-                            )
+
                           ],
                         )
                       ],
+                    ),Container(
+                      width: (MediaQuery.of(context).size.width),
+                      child: RichText(
+                          text: TextSpan(
+                              text: "更新时间:",
+                              style: labStyle,
+                              children: [
+                                TextSpan(
+                                    text: qNull(ysb.gxtime),
+                                    style: textStyle),
+                              ]),
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.left,
+                          maxLines: 2),
                     ),
                     Container(
                       child: Text(qNull(ysb.js)),
                     ),
                     Wrap(
                         children: playList
-                            .map((ys) => MaterialButton(
+                            .map((ys) => Padding(padding:EdgeInsets.fromLTRB(2, 0, 2, 0),child:MaterialButton(
                                   height: 40,
                                   elevation: 5,
                                   color: ys['name'] == pNAME
@@ -548,13 +587,21 @@ class _YsPageState extends State<YsPage> {
                                     _loadVideo(ys['url']),
                                     setState(() {})
                                   },
-                                ))
+                                )))
                             .toList()),
                   ],
                 ),
               ),
             )
           ],
+        ):SpinKitPulse(
+          itemBuilder: (BuildContext context, int index) {
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                color:Colors.grey
+              ),
+            );
+          },
         ));
   }
 

@@ -4,9 +4,9 @@
 
 # 淡白影视安卓端
 
-![](https://img.shields.io/badge/%E7%89%88%E6%9C%AC-1.0.5-blue)
+![](https://img.shields.io/badge/%E7%89%88%E6%9C%AC-1.1.4-blue)
 
-[下载地址](http://cdn.p00q.cn/ys/app/淡白影视Flutter.apk)
+[下载地址](https://danbai.lanzous.com/b03b62x7i)
 
 ## 功能特性
 
@@ -15,6 +15,7 @@
 + 跨平台同步观看进度
 + p2p视频加速
 + 一起看观看,语音连麦
++ 倍速播放
 
 
 ## 应用图
@@ -35,6 +36,12 @@
 + 详见项目文件
 
 ## 版本内容更新
+
+### 2020-7-10
+
++ 修复亮度控制
++ 增加倍速播放！！！
++ 投屏设备数量bug修复
 
 ### 2020-4-21
 

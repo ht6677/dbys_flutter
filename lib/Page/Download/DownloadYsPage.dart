@@ -52,19 +52,27 @@ class _DownloadYsState extends State<DownloadYsPage> {
         List<FileSystemEntity> jisFiles = ys.listSync();
         List jis = [];
         jisFiles.forEach((y) {
-          //添加集
-          jis.add({
-            "name": y.path
-                .substring(y.path.lastIndexOf('/') + 1, y.path.length - 4),
-            "path": y.path
-          });
+          if(y.path.indexOf(".xy")<0){
+            //添加集
+            jis.add({
+              "name": y.path
+                  .substring(y.path.lastIndexOf('/') + 1, y.path.length - 4),
+              "path": y.path
+            });
+          }
         });
-        yss.add({"pm": pm, "jis": jis});
+        jis.sort((a, b) => a["name"].compareTo(b["name"]));
+        jis.sort((left,right)=>0);
+        if(jis.length>0){
+          yss.add({"pm": pm, "jis": jis});
+        }
       });
       setState(() {});
     }
   }
-
+  bool equalsIgnoreCase(String string1, String string2) {
+    return string1?.toLowerCase() == string2?.toLowerCase();
+  }
   init() async {
     addYS();
     rawDgramSocket = await RawDatagramSocket.bind('127.0.0.1', 2256);
@@ -77,7 +85,7 @@ class _DownloadYsState extends State<DownloadYsPage> {
           switch (data['type']) {
             case "onDownloading":
               xzPm = data['pm'];
-              xzJinDu = (data['schedule'] * 100).toInt().toString() + "%";
+              xzJinDu = (data['schedule']).toInt().toString() + "%";
               xzJi = data['JiName'];
               break;
             case "onProgress":

@@ -1,6 +1,5 @@
 package cn.p00q.dbys
 
-
 import androidx.annotation.NonNull
 import com.yanbo.lib_screen.VApplication
 import io.flutter.embedding.android.FlutterActivity

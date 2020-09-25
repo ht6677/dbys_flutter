@@ -58,10 +58,10 @@ class _MainPageState extends State<MainPage> {
               });
             },
             items: [
-              TitledNavigationBarItem(title: '首页', icon: Icons.home),
-              TitledNavigationBarItem(title: '分类', icon: Icons.blur_on),
-              TitledNavigationBarItem(title: '一起看', icon: Icons.add_to_queue),
-              TitledNavigationBarItem(title: '我的', icon: Icons.account_circle),
+              TitledNavigationBarItem(title:Text('首页'), icon: Icons.home),
+              TitledNavigationBarItem(title: Text('分类'), icon: Icons.blur_on),
+              TitledNavigationBarItem(title: Text('一起看'), icon: Icons.add_to_queue),
+              TitledNavigationBarItem(title: Text('我的'), icon: Icons.account_circle),
             ]),
         // ignore: missing_return
       ),
@@ -79,7 +79,7 @@ class _MainPageState extends State<MainPage> {
               fontSize: 16.0);
         } else {
           lastPopTime = DateTime.now();
-          DownloadManagement.cancel();
+          DownloadManagement.removeBind();
           // 退出app
           exit(0);
         }
